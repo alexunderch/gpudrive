@@ -20,22 +20,18 @@ def process_tfrecord_file(file_path, unsolvable_vehicle_ids=None):
     # All goals are solvable, so we mark all vehicles as not static
     if unsolvable_vehicle_ids is None or len(unsolvable_vehicle_ids) == 0:
         for obj_idx, obj in enumerate(tfrecord_dict.get("objects", [])):
-            if obj.get("type") in ["vehicle", "pedestrian", "bicycle"]:
-                obj["mark_as_static"] = False
+            obj["mark_as_static"] = False
     else:
         logging.debug(
             f"File has {len(tfrecord_dict.get('objects', []))} agents, {len(unsolvable_vehicle_ids)} of which have unsolvable goals."
         )
         # Iterate through the objects in the file
         for obj_idx, obj in enumerate(tfrecord_dict.get("objects", [])):
-            logging.debug(f"obj_idx: {obj_idx}")
-            # Check if the object is something we can control
-            if obj.get("type") in ["vehicle", "pedestrian", "bicycle"]:
-                # TODO(dc): Check if this logic holds. This assumes that the vehicle order is deterministic
-                if obj_idx in unsolvable_vehicle_ids:
-                    obj["mark_as_static"] = True
-                else:
-                    obj["mark_as_static"] = False
+            # TODO(dc): Check if this logic holds. This assumes that the vehicle order is deterministic
+            if obj_idx in unsolvable_vehicle_ids:
+                obj["mark_as_static"] = True
+            else:
+                obj["mark_as_static"] = False
 
     return tfrecord_dict
 
@@ -66,6 +62,8 @@ def mark_unsolvable_trajectories(
             processed_file = process_tfrecord_file(
                 file_path, unsolvable_vehicle_ids
             )
+        
+            logging.debug(f"Processed file now has {sum([processed_file['objects'][i]['mark_as_static'] for i in range(len(processed_file['objects']))])} mark_as_static agents")
 
             # Save the processed file
             output_file_path = os.path.join(save_path, file_name)
