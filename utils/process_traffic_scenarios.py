@@ -62,8 +62,10 @@ def mark_unsolvable_trajectories(
             processed_file = process_tfrecord_file(
                 file_path, unsolvable_vehicle_ids
             )
-        
-            logging.debug(f"Processed file now has {sum([processed_file['objects'][i]['mark_as_static'] for i in range(len(processed_file['objects']))])} mark_as_static agents")
+
+            logging.debug(
+                f"Processed file now has {sum([processed_file['objects'][i]['mark_as_static'] for i in range(len(processed_file['objects']))])} mark_as_static agents"
+            )
 
             # Save the processed file
             output_file_path = os.path.join(save_path, file_name)
