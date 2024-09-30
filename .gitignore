@@ -28,6 +28,7 @@ data/formatted_json_v2_no_tl_train/*
 /maps_*/*
 /formatted_json_v2_no_tl_train
 /formatted_json_v2_no_tl_valid/*
+/data/formatted_json_v2_no_tl_train_processed
 /waymo_data_new
 /maps_16
 **/*ppo_model*/
