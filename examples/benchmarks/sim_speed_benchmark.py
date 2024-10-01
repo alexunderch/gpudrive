@@ -13,6 +13,9 @@ from multiprocessing import Process, Queue
 
 import gpudrive
 
+# cache the kernel so we don't have to recompile it every time
+os.environ["MADRONA_MWGPU_KERNEL_CACHE"] = "./gpudrive_cache"
+
 MAX_CONT_AGENTS = 128
 EPISODE_LENGTH = 80
 
@@ -36,7 +39,7 @@ def make_sim(
     params.observationRadius = 10.0
     params.collisionBehaviour = gpudrive.CollisionBehaviour.AgentRemoved
     params.rewardParams = reward_params
-    params.IgnoreNonVehicles = True
+    params.IgnoreNonVehicles = False
 
     if actor_type == "random":
         params.maxNumControlledAgents = MAX_CONT_AGENTS
@@ -84,12 +87,15 @@ def run_speed_bench(
 
     sim.reset(list(range(batch_size)))
 
+    actions_shape = sim.action_tensor().to_torch()
+
     # PROFILE STEPS
     for _ in range(episode_length):
 
-        rand_actions = torch.randint(
-            0, 9, size=(batch_size, max_num_objects, 3)
-        )
+        # Generate random actions of shape
+        rand_actions = rand_actions = torch.randint_like(
+            input=actions_shape, high=10, low=0
+        ).to(device)
 
         # Step
         start_step = time.time()
@@ -108,10 +114,9 @@ def run_speed_bench(
 
         end_step = time.time()
 
-        # STORE THROUGHPUT
         total_step_time += end_step - start_step
 
-        # TODO: Store valid object distance
+        # STORE GOODPUT
         total_valid_frames += (
             (sim.controlled_state_tensor().to_torch() == 1).sum().item()
         )
@@ -177,14 +182,15 @@ def run_simulation(
 
 if __name__ == "__main__":
 
-    DATA_FOLDER = "../nocturne_data/formatted_json_v2_no_tl_valid"
-    BATCH_SIZE_LIST = [64]
-    ACTOR_TYPE = "random" # "expert_actor"
+    DATA_FOLDER = "data/formatted_json_v2_no_tl_train_processed"
+    BATCH_SIZE_LIST = [1, 16, 32, 64, 128, 256, 512]
+    ACTOR_TYPE = "random"  # "expert_actor"
     DEVICE = "cuda"
-    DATASET_INIT = "first_n" # or "random"
+    DATASET_INIT = "first_n"  # or "random"
 
-    scenes = [os.path.join(DATA_FOLDER, scene) for scene in os.listdir(DATA_FOLDER)]
-
+    scenes = [
+        os.path.join(DATA_FOLDER, scene) for scene in os.listdir(DATA_FOLDER)
+    ]
 
     # Get device info
     device_name = GPUtil.getGPUs()[0].name
@@ -236,6 +242,7 @@ if __name__ == "__main__":
     df = pd.DataFrame(
         data={
             "simulator": "GPU Drive",
+            "obs_type": "standard",  # Standard or lidar
             "device_name": device_name,
             "device_mem": device_total_memory,
             "actors": ACTOR_TYPE,

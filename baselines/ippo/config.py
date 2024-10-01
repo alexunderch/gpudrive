@@ -9,14 +9,14 @@ class ExperimentConfig:
     """Configurations for experiments."""
 
     # DATASET
-    data_dir: str = "data"
+    data_dir: str = "data/formatted_json_v2_no_tl_train_processed"
 
     # NUM PARALLEL ENVIRONMENTS & DEVICE
-    num_worlds: int = 50  # Number of parallel environmentss
+    num_worlds: int = 250  # Number of parallel environmentss
 
     # How to select scenes from the dataset
     selection_discipline = SelectionDiscipline.K_UNIQUE_N  # K_UNIQUE_N / PAD_N
-    k_unique_scenes: int = 3
+    k_unique_scenes: int = 250
     device: str = "cuda"  # or "cpu"
 
     # Set the weights for the reward components
@@ -29,8 +29,8 @@ class ExperimentConfig:
     # RENDERING
     render: bool = True
     render_mode: str = "rgb_array"
-    render_freq: int = 50  # Render every k rollouts
-    render_n_worlds: int = 3  # Number of worlds to render
+    render_freq: int = 400  # Render every k rollouts
+    render_n_worlds: int = 10  # Number of worlds to render
 
     # TRACK THE TIME IT TAKES TO GET TO 95% GOAL RATE
     track_time_to_solve: bool = False
@@ -65,7 +65,7 @@ class ExperimentConfig:
     n_steps: int = 91
     num_minibatches: int = 5  # Used to determine the minibatch size
     verbose: int = 0
-    total_timesteps: int = 1e7
+    total_timesteps: int = 100e7
     ent_coef: float = 0.00
     vf_coef: float = 0.5
     lr: float = 3e-4

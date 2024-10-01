@@ -307,7 +307,7 @@ def run_speed_bench(
     state = env.reset(scenario)
     start_step = perf_counter()
     _, state_traj = jax.lax.scan(
-        f=f_scan_step,
+        f=f_scan_step_with_obs_comp,
         init=state,
         xs=None,
         length=episode_length,
@@ -342,7 +342,7 @@ def run_speed_bench(
 
 if __name__ == "__main__":
 
-    BATCH_SIZE_LIST = [1, 2, 4, 8, 16]
+    BATCH_SIZE_LIST = [1, 2, 4, 8]
     ACTOR_TYPE = "expert_actor"
 
     # Get device info
